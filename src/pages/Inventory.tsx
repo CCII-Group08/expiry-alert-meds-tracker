@@ -21,7 +21,7 @@ const Inventory = () => {
   const [filteredMedicines, setFilteredMedicines] = useState<any[]>([]);
   
   // Fetch medicines using React Query
-  const { data: medicines, isLoading, error } = useQuery({
+  const { data: medicines = [], isLoading, error } = useQuery({
     queryKey: ['medicines'],
     queryFn: MedicineAPI.getAll,
     // Use the mock data until MongoDB is properly connected
@@ -51,7 +51,11 @@ const Inventory = () => {
   
   // Filter medicines based on search term
   const handleSearch = () => {
-    if (!medicines) return;
+    if (!medicines || !Array.isArray(medicines)) {
+      console.error('Medicines data is not an array:', medicines);
+      setFilteredMedicines([]);
+      return;
+    }
     
     const filtered = medicines.filter((medicine: any) => 
       medicine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,7 +91,7 @@ const Inventory = () => {
   };
   
   // Determine which medicines to display
-  const displayedMedicines = filteredMedicines.length > 0 ? filteredMedicines : medicines;
+  const displayedMedicines = filteredMedicines.length > 0 ? filteredMedicines : (Array.isArray(medicines) ? medicines : []);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
