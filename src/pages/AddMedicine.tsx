@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Form schema with validation
 const medicineSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   quantity: z.number().min(1, { message: "Quantity must be at least 1" }),
@@ -69,15 +67,12 @@ const AddMedicine = () => {
 
   const onSubmit = async (data: MedicineFormValues) => {
     try {
-      // We would normally send this to our API
       console.log('Form submitted with data:', data);
       
-      // Success message
       toast.success("Medicine added successfully!", {
         description: `${data.name} has been added to your inventory.`,
       });
       
-      // Navigate back to inventory
       navigate('/inventory');
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -101,7 +96,7 @@ const AddMedicine = () => {
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Medicine className="h-6 w-6 text-primary" />
+            <Pill className="h-6 w-6 text-primary" />
             <CardTitle>Add New Medicine</CardTitle>
           </div>
           <CardDescription>
