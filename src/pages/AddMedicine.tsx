@@ -10,4 +10,4 @@ const AddMedicine = () => {
   );
 };
 
-export default Inventory;
+export default AddMedicine;
