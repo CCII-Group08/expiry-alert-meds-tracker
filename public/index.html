@@ -1,0 +1,448 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExpiryAlert - Medicine Expiry Tracking</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/logo.svg" alt="ExpiryAlert Logo" class="logo">
+        <h1>ExpiryAlert</h1>
+      </div>
+      <div class="user-role-selector">
+        <label for="user-role">Login as:</label>
+        <select id="user-role">
+          <option value="admin">Administrator</option>
+          <option value="pharmacist">Pharmacist</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </div>
+      <nav class="navigation">
+        <ul>
+          <li><a href="#dashboard" class="active" data-view="dashboard"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li><a href="#inventory" data-view="inventory"><i class="fas fa-pills"></i> Inventory</a></li>
+          <li><a href="#add-medicine" data-view="add-medicine"><i class="fas fa-plus-circle"></i> Add Medicine</a></li>
+          <li><a href="#reports" data-view="reports"><i class="fas fa-file-alt"></i> Reports</a></li>
+          <li><a href="#barcode" data-view="barcode"><i class="fas fa-barcode"></i> Barcode Tool</a></li>
+        </ul>
+      </nav>
+      <div class="sidebar-footer">
+        <p>&copy; 2023 ExpiryAlert</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-title">
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+        <div class="header-actions">
+          <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search medicines...">
+            <button id="search-button"><i class="fas fa-search"></i></button>
+          </div>
+          <div class="notifications">
+            <span id="notification-badge" class="badge">0</span>
+            <i class="fas fa-bell"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Alert Container -->
+      <div id="alerts-container"></div>
+
+      <!-- Views Container -->
+      <div class="views-container">
+        <!-- Dashboard View -->
+        <section id="dashboard" class="view active">
+          <div class="dashboard-summary">
+            <div class="summary-card expired">
+              <div class="summary-icon">
+                <i class="fas fa-exclamation-circle"></i>
+              </div>
+              <div class="summary-details">
+                <h3>Expired Medicines</h3>
+                <p id="expired-count">0</p>
+              </div>
+            </div>
+            <div class="summary-card expiring">
+              <div class="summary-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="summary-details">
+                <h3>Expiring Soon</h3>
+                <p id="expiring-count">0</p>
+              </div>
+            </div>
+            <div class="summary-card safe">
+              <div class="summary-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="summary-details">
+                <h3>Safe Medicines</h3>
+                <p id="safe-count">0</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-charts">
+            <div class="chart-container">
+              <h3>Medicines by Category</h3>
+              <canvas id="category-chart"></canvas>
+            </div>
+            <div class="chart-container">
+              <h3>Expiry Status</h3>
+              <canvas id="expiry-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="dashboard-tables">
+            <div class="table-container">
+              <h3>Medicines Expiring This Week</h3>
+              <table id="expiring-this-week">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Batch #</th>
+                    <th>Expiry Date</th>
+                    <th>Days Left</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+              <div class="table-footer">
+                <a href="#reports" data-view="reports" class="view-all">View All</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Inventory View -->
+        <section id="inventory" class="view">
+          <div class="inventory-filters">
+            <div class="filter-group">
+              <label for="filter-status">Status:</label>
+              <select id="filter-status">
+                <option value="all">All</option>
+                <option value="expired">Expired</option>
+                <option value="expiring-soon">Expiring Soon</option>
+                <option value="safe">Safe</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-category">Category:</label>
+              <select id="filter-category">
+                <option value="all">All</option>
+                <option value="antibiotics">Antibiotics</option>
+                <option value="analgesics">Analgesics</option>
+                <option value="antiviral">Antiviral</option>
+                <option value="vitamins">Vitamins</option>
+                <option value="vaccines">Vaccines</option>
+                <option value="antihistamines">Antihistamines</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <button id="reset-filters">Reset Filters</button>
+            </div>
+          </div>
+
+          <div class="inventory-table-container">
+            <table id="inventory-table" class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Quantity</th>
+                  <th>Batch #</th>
+                  <th>Expiry Date</th>
+                  <th>Manufacturer</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <button id="prev-page" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+            <span id="page-info">Page 1 of 1</span>
+            <button id="next-page" disabled>Next <i class="fas fa-chevron-right"></i></button>
+          </div>
+        </section>
+
+        <!-- Add/Edit Medicine View -->
+        <section id="add-medicine" class="view">
+          <form id="medicine-form" class="medicine-form">
+            <input type="hidden" id="medicine-id">
+            <div class="form-header">
+              <h2 id="form-title">Add New Medicine</h2>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="medicine-name">Medicine Name*</label>
+                <input type="text" id="medicine-name" required>
+              </div>
+              <div class="form-group">
+                <label for="medicine-quantity">Quantity*</label>
+                <input type="number" id="medicine-quantity" min="0" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="medicine-batch">Batch Number*</label>
+                <input type="text" id="medicine-batch" required>
+              </div>
+              <div class="form-group">
+                <label for="medicine-expiry">Expiry Date*</label>
+                <input type="date" id="medicine-expiry" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="medicine-manufacturer">Manufacturer*</label>
+                <input type="text" id="medicine-manufacturer" required>
+              </div>
+              <div class="form-group">
+                <label for="medicine-category">Category*</label>
+                <select id="medicine-category" required>
+                  <option value="">Select Category</option>
+                  <option value="antibiotics">Antibiotics</option>
+                  <option value="analgesics">Analgesics</option>
+                  <option value="antiviral">Antiviral</option>
+                  <option value="vitamins">Vitamins</option>
+                  <option value="vaccines">Vaccines</option>
+                  <option value="antihistamines">Antihistamines</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="medicine-barcode">Barcode (Optional)</label>
+                <input type="text" id="medicine-barcode">
+              </div>
+              <div class="form-group">
+                <button type="button" id="scan-barcode" class="secondary-button">
+                  <i class="fas fa-barcode"></i> Scan Barcode
+                </button>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label for="medicine-notes">Notes (Optional)</label>
+                <textarea id="medicine-notes" rows="3"></textarea>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" id="form-cancel" class="cancel-button">Cancel</button>
+              <button type="submit" id="form-submit" class="primary-button">Add Medicine</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Reports View -->
+        <section id="reports" class="view">
+          <div class="reports-tabs">
+            <button class="tab-button active" data-tab="expiry-reports">Expiry Reports</button>
+            <button class="tab-button" data-tab="inventory-reports">Inventory Reports</button>
+          </div>
+
+          <div class="tab-content">
+            <div id="expiry-reports" class="tab-pane active">
+              <div class="report-actions">
+                <h3>Expiry Status Reports</h3>
+                <div class="button-group">
+                  <button id="download-expired-csv" class="secondary-button">
+                    <i class="fas fa-file-csv"></i> CSV
+                  </button>
+                  <button id="download-expired-pdf" class="secondary-button">
+                    <i class="fas fa-file-pdf"></i> PDF
+                  </button>
+                </div>
+              </div>
+
+              <div class="report-filters">
+                <div class="filter-group">
+                  <label for="report-status">Status:</label>
+                  <select id="report-status">
+                    <option value="all">All Medicines</option>
+                    <option value="expired">Expired</option>
+                    <option value="expiring-soon">Expiring Soon</option>
+                    <option value="expiring-this-week">Expiring This Week</option>
+                    <option value="expiring-this-month">Expiring This Month</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="reports-table-container">
+                <table id="expiry-reports-table" class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Batch #</th>
+                      <th>Expiry Date</th>
+                      <th>Days Left</th>
+                      <th>Status</th>
+                      <th>Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Dynamically populated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div id="inventory-reports" class="tab-pane">
+              <div class="report-actions">
+                <h3>Inventory Reports</h3>
+                <div class="button-group">
+                  <button id="download-inventory-csv" class="secondary-button">
+                    <i class="fas fa-file-csv"></i> CSV
+                  </button>
+                  <button id="download-inventory-pdf" class="secondary-button">
+                    <i class="fas fa-file-pdf"></i> PDF
+                  </button>
+                </div>
+              </div>
+
+              <div class="chart-container">
+                <canvas id="inventory-chart"></canvas>
+              </div>
+
+              <div class="inventory-summary">
+                <div class="summary-card">
+                  <h3>Total Medicines</h3>
+                  <p id="total-medicines-count">0</p>
+                </div>
+                <div class="summary-card">
+                  <h3>Categories</h3>
+                  <p id="categories-count">0</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Barcode Tool View -->
+        <section id="barcode" class="view">
+          <div class="barcode-scanner-container">
+            <h2>Barcode Scanner</h2>
+            <p>Enter barcode manually or scan using your camera</p>
+
+            <div class="barcode-input">
+              <input type="text" id="barcode-input" placeholder="Enter barcode number">
+              <button id="lookup-barcode" class="primary-button">
+                <i class="fas fa-search"></i> Lookup
+              </button>
+            </div>
+
+            <div class="or-divider">OR</div>
+
+            <div class="scanner-placeholder">
+              <button id="start-scan" class="primary-button">
+                <i class="fas fa-camera"></i> Start Scanning
+              </button>
+              <div id="scanner-container" style="display: none;">
+                <video id="scanner-video"></video>
+                <button id="stop-scan" class="secondary-button">Stop Scanning</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="barcode-generator">
+            <h2>Generate Barcode/QR</h2>
+            <p>Create a label for your medicine</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="gen-barcode-value">Value</label>
+                <input type="text" id="gen-barcode-value" placeholder="Product code or ID">
+              </div>
+              <div class="form-group">
+                <label for="gen-barcode-type">Type</label>
+                <select id="gen-barcode-type">
+                  <option value="qr">QR Code</option>
+                  <option value="code128">Code 128</option>
+                  <option value="ean13">EAN-13</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="generate-barcode" class="primary-button">Generate</button>
+
+            <div id="generated-barcode" class="barcode-result">
+              <!-- Generated barcode will appear here -->
+            </div>
+
+            <div class="barcode-actions" style="display: none;">
+              <button id="print-barcode" class="secondary-button">
+                <i class="fas fa-print"></i> Print
+              </button>
+              <button id="download-barcode" class="secondary-button">
+                <i class="fas fa-download"></i> Download
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title"></h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Modal content dynamically generated -->
+      </div>
+      <div class="modal-footer" id="modal-footer">
+        <!-- Modal footer dynamically generated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+
+  <!-- Application Scripts -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/medicine.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/barcode.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
